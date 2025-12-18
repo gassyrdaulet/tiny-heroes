@@ -1,87 +1,87 @@
 package physics
 
 import (
+	"math"
+
 	"github.com/gassyrdaulet/go-fighting-game/base"
 	"github.com/gassyrdaulet/go-fighting-game/constants"
-	"github.com/gassyrdaulet/go-fighting-game/entities"
 )
 
 type World struct {
-	Tiles base.TileMap
+	Tiles *base.TileMap
+    VirtualBorderLeftX float64
+    VirtualBorderRightX float64
 }
 
-func (w *World) StepControllable(p *entities.Controllable, in base.Input) {
-	body := p.Body
-	char := p.Character
+func (w *World) Step(p PhysicalBody) {
+	x, y := p.Position()
+	vx, vy := p.Velocity()
+	wid, h := p.Size()
+	weight := p.GetWeight()
 
-	// ===== INPUT =====
-	if p.IsJumpCharging && p.ChargingJumpTicks > 0 {
-		p.ChargingJumpTicks--
-	} else {
-		if p.OnGround {
-			body.VX = in.MoveX * char.Speed
+	vy += constants.Gravity * weight
+
+	newX := x + vx
+	newY := y + vy
+
+	if vx != 0 {
+		if newX - wid/2 < w.VirtualBorderLeftX || newX + wid/2 > w.VirtualBorderRightX {
+			newX = x
 		} else {
-			body.VX = in.MoveX*char.Speed - char.Speed/3
-		}
-	}
+			tileX := int((newX + math.Copysign(wid/2, vx)) / constants.TileSize)
+			tileY1 := int(y / constants.TileSize)
+			tileY2 := int((y + h - 1) / constants.TileSize)
 
-	if in.Jump && !p.IsJumpCharging && body.OnGround {
-		p.ChargingJumpTicks = p.Character.ChargingJumpTicksMax
-		p.IsJumpCharging = true
-	}
-
-	if p.IsJumpCharging && body.OnGround && p.ChargingJumpTicks <= 0 {
-		p.vy = char.Jump
-		p.InAir = 1
-		p.ChargingJumpTicks = 0
-		p.IsJumpCharging = false
-	}
-
-	// ===== GRAVITY =====
-	body.VY += constants.Gravity - char.GravityResist
-
-	// ===== MOVE X =====
-	newX := body.X + body.VX
-	if body.VX != 0 {
-		if !w.collidesAt(newX, body.Y, body) {
-			body.X = newX
-		} else {
-			body.VX = 0
-		}
-	}
-
-	// ===== MOVE Y =====
-	newY := body.Y + body.VY
-	if body.VY != 0 {
-		if !w.collidesAt(body.X, newY, body) {
-			body.Y = newY
-			body.OnGround = false
-		} else {
-			if body.VY > 0 {
-				body.OnGround = true
-			}
-			body.VY = 0
-		}
-	}
-}
-
-func (w *World) collidesAt(x, y float64, body *entities.Body) bool {
-	left := worldToTile(x)
-	right := worldToTile(x + body.Width - 1)
-	top := worldToTile(y)
-	bottom := worldToTile(y + body.Height - 1)
-
-	for ty := top; ty <= bottom; ty++ {
-		for tx := left; tx <= right; tx++ {
-			if w.Tiles.IsSolid(tx, ty) {
-				return true
+			for ty := tileY1; ty <= tileY2; ty++ {
+				if w.Tiles.IsSolid(tileX, ty) {
+					newX = x
+					break
+				}
 			}
 		}
 	}
 
-	return false
+	onGround := false
+
+	if vy != 0 {
+		if vy > 0 {
+			tileY := int((newY + h) / constants.TileSize)
+			tileX1 := int((newX - wid/2) / constants.TileSize)
+			tileX2 := int((newX + wid/2) / constants.TileSize)
+
+			for tx := tileX1; tx <= tileX2; tx++ {
+				if w.Tiles.IsSolid(tx, tileY) {
+					newY = float64(tileY)*constants.TileSize - h
+					vy = 0
+					onGround = true
+					break
+				}
+			}
+		} else {
+			tileY := int(newY / constants.TileSize)
+			tileX1 := int((newX - wid/2) / constants.TileSize)
+			tileX2 := int((newX + wid/2) / constants.TileSize)
+
+			for tx := tileX1; tx <= tileX2; tx++ {
+				if w.Tiles.IsSolid(tx, tileY) {
+					newY = float64(tileY+1) * constants.TileSize
+					vy = 0
+					break
+				}
+			}
+		}
+	}
+
+	p.SetOnGround(onGround)
+	p.SetPosition(newX, newY)
+	p.SetVelocity(vx, vy)
 }
 
-func worldToTile(v float64) int {
-	return int(v) / constants.TileSize
+func (w *World) UpdateVirtualBounds(cam *base.Camera) {
+    w.VirtualBorderLeftX = cam.X - float64(cam.Width)/2
+    w.VirtualBorderRightX = cam.X + float64(cam.Width)/2
+}
+
+func NewWorld(tiles *base.TileMap) *World {
+	return &World{Tiles: tiles}
 }

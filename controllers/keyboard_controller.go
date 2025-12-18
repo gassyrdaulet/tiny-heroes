@@ -7,20 +7,24 @@ import (
 type KeyboardController struct {
 	Left  ebiten.Key
 	Right ebiten.Key
-	Jump  ebiten.Key
+	Up  ebiten.Key
+	Down  ebiten.Key
 }
 
 func (c *KeyboardController) GetInput() base.Input {
 	var input base.Input
 
 	if ebiten.IsKeyPressed(c.Left) {
-		input.MoveX = -1
+		input.Left = true
 	}
 	if ebiten.IsKeyPressed(c.Right) {
-		input.MoveX = 1
+		input.Right = true
 	}
-	if ebiten.IsKeyPressed(c.Jump) {
-		input.Jump = true
+	if ebiten.IsKeyPressed(c.Up) {
+		input.Up = true
+	}
+	if ebiten.IsKeyPressed(c.Down) {
+		input.Down = true
 	}
 
 	return input

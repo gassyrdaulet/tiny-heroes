@@ -1,6 +1,8 @@
 package base
 
 type Input struct {
-	MoveX float64
-	Jump  bool
+	Left  bool
+	Right bool
+	Up    bool
+	Down  bool
 }

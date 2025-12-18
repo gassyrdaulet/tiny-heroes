@@ -55,8 +55,8 @@ func loadFrames(cfg *AnimationConfig) ([]*ebiten.Image, error) {
 	for i := 0; i < cfg.Count; i++ {
 		sx0 := i*cfg.Width + cfg.StartX
 		sy0 := cfg.StartY
-		sx1 := sx0 + cfg.Height
-		sy1 := cfg.Height + cfg.Height
+		sx1 := sx0 + cfg.Width
+		sy1 := sy0 + cfg.Height
 
 		sub := img.SubImage(image.Rect(sx0, sy0, sx1, sy1)).(*ebiten.Image)
 		frames[i] = sub
@@ -81,4 +81,57 @@ func LoadAnimations(cfgs []AnimationConfig) (map[string]*Animation, error) {
 	}
 
 	return animations, nil
+}
+
+type Animator struct {
+	CurrentAnimation       string
+	Animations           map[string]*Animation
+	SpriteScaleX, SpriteScaleY float64
+}
+
+func NewAnimator(animations map[string]*Animation, current string) *Animator {
+    return &Animator{
+        Animations: animations,
+        CurrentAnimation: current,
+		SpriteScaleX: 1,
+		SpriteScaleY: 1,
+    }
+}
+
+func (a *Animator) UpdateFrame(state string) {
+    if a.CurrentAnimation != state {
+        a.CurrentAnimation = state
+        anim := a.Animations[a.CurrentAnimation]
+        anim.FrameIndex = 0
+        anim.FrameTick = 0
+    }
+
+    anim := a.Animations[a.CurrentAnimation]
+    anim.FrameTick++
+    if anim.FrameTick >= anim.FrameSpeed {
+        anim.FrameTick = 0
+        if anim.Loop {
+            anim.FrameIndex = (anim.FrameIndex + 1) % len(anim.Frames)
+        } else if anim.FrameIndex < len(anim.Frames)-1 {
+            anim.FrameIndex++
+        }
+    }
+}
+
+func (a *Animator) DrawFrame(screen *ebiten.Image, x, y float64, flip bool) {
+    anim := a.Animations[a.CurrentAnimation]
+    if len(anim.Frames) == 0 {
+        return
+    }
+	currentFrame := anim.Frames[anim.FrameIndex]
+	frameWidth := float64(currentFrame.Bounds().Dx())
+    op := &ebiten.DrawImageOptions{}
+    if flip {
+        op.GeoM.Scale(-a.SpriteScaleX, a.SpriteScaleY)
+        op.GeoM.Translate(x+(frameWidth/2)*a.SpriteScaleX, y)
+    } else {
+        op.GeoM.Scale(a.SpriteScaleX, a.SpriteScaleY)
+        op.GeoM.Translate(x-(frameWidth/2)*a.SpriteScaleX, y)
+    }
+    screen.DrawImage(anim.Frames[anim.FrameIndex], op)
 }
