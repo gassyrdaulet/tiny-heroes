@@ -5,4 +5,5 @@ const (
 	ScreenH      = 600
 	GroundHeight = 20
 	Gravity      = 0.4
+	TileSize     = 32
 )
