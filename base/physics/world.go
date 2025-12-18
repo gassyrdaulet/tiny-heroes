@@ -8,9 +8,10 @@ import (
 )
 
 type World struct {
-	Tiles *base.TileMap
-    VirtualBorderLeftX float64
-    VirtualBorderRightX float64
+	Tiles               *base.TileMap
+	VirtualBorderLeftX  float64
+	VirtualBorderRightX float64
+	Width, Height       float64
 }
 
 func (w *World) Step(p PhysicalBody) {
@@ -25,7 +26,7 @@ func (w *World) Step(p PhysicalBody) {
 	newY := y + vy
 
 	if vx != 0 {
-		if newX - wid/2 < w.VirtualBorderLeftX || newX + wid/2 > w.VirtualBorderRightX {
+		if newX-wid/2 < w.VirtualBorderLeftX || newX+wid/2 > w.VirtualBorderRightX {
 			newX = x
 		} else {
 			tileX := int((newX + math.Copysign(wid/2, vx)) / constants.TileSize)
@@ -78,10 +79,15 @@ func (w *World) Step(p PhysicalBody) {
 }
 
 func (w *World) UpdateVirtualBounds(cam *base.Camera) {
-    w.VirtualBorderLeftX = cam.X - float64(cam.Width)/2
-    w.VirtualBorderRightX = cam.X + float64(cam.Width)/2
+	w.VirtualBorderLeftX = cam.X - float64(cam.Width)/2
+	w.VirtualBorderRightX = cam.X + float64(cam.Width)/2
 }
 
 func NewWorld(tiles *base.TileMap) *World {
-	return &World{Tiles: tiles}
+	w := &World{
+		Tiles: tiles,
+	}
+	w.Width = float64(tiles.Width) * constants.TileSize
+	w.Height = float64(tiles.Height) * constants.TileSize
+	return w
 }

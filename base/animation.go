@@ -12,24 +12,29 @@ type Animation struct {
 	FrameIndex int
 	FrameTick  int
 	FrameSpeed int
+	XO, YO     float64
 	Loop       bool
 }
 
 type AnimationConfig struct {
-	Name       string
-	FilePath   string
-	Width      int
-	Height     int
-	Count      int
-	StartX     int
-	StartY     int
-	FrameSpeed int
-	Loop       bool
+	Name        string
+	FilePath    string
+	Width       int
+	Height      int
+	Count       int
+	StartX      int
+	StartY      int
+	LeftOffset  int
+	RightOffset int
+	FrameSpeed  int
+	XO, YO      float64
+	Loop        bool
 }
 
 func Anim(
 	name, path string,
 	w, h, count, x, y, speed int,
+	xOffset, yOffset float64,
 	loop bool,
 ) AnimationConfig {
 	return AnimationConfig{
@@ -41,6 +46,8 @@ func Anim(
 		StartX:     x,
 		StartY:     y,
 		FrameSpeed: speed,
+		XO:         xOffset,
+		YO:         yOffset,
 		Loop:       loop,
 	}
 }
@@ -77,6 +84,8 @@ func LoadAnimations(cfgs []AnimationConfig) (map[string]*Animation, error) {
 			Frames:     frames,
 			FrameSpeed: cfg.FrameSpeed,
 			Loop:       cfg.Loop,
+			XO:         cfg.XO,
+			YO:         cfg.YO,
 		}
 	}
 
@@ -84,54 +93,55 @@ func LoadAnimations(cfgs []AnimationConfig) (map[string]*Animation, error) {
 }
 
 type Animator struct {
-	CurrentAnimation       string
-	Animations           map[string]*Animation
+	CurrentAnimation           string
+	Animations                 map[string]*Animation
 	SpriteScaleX, SpriteScaleY float64
 }
 
 func NewAnimator(animations map[string]*Animation, current string) *Animator {
-    return &Animator{
-        Animations: animations,
-        CurrentAnimation: current,
-		SpriteScaleX: 1,
-		SpriteScaleY: 1,
-    }
+	return &Animator{
+		Animations:       animations,
+		CurrentAnimation: current,
+		SpriteScaleX:     1,
+		SpriteScaleY:     1,
+	}
 }
 
 func (a *Animator) UpdateFrame(state string) {
-    if a.CurrentAnimation != state {
-        a.CurrentAnimation = state
-        anim := a.Animations[a.CurrentAnimation]
-        anim.FrameIndex = 0
-        anim.FrameTick = 0
-    }
+	if a.CurrentAnimation != state {
+		a.CurrentAnimation = state
+		anim := a.Animations[a.CurrentAnimation]
+		anim.FrameIndex = 0
+		anim.FrameTick = 0
+	}
 
-    anim := a.Animations[a.CurrentAnimation]
-    anim.FrameTick++
-    if anim.FrameTick >= anim.FrameSpeed {
-        anim.FrameTick = 0
-        if anim.Loop {
-            anim.FrameIndex = (anim.FrameIndex + 1) % len(anim.Frames)
-        } else if anim.FrameIndex < len(anim.Frames)-1 {
-            anim.FrameIndex++
-        }
-    }
+	anim := a.Animations[a.CurrentAnimation]
+	anim.FrameTick++
+	if anim.FrameTick >= anim.FrameSpeed {
+		anim.FrameTick = 0
+		if anim.Loop {
+			anim.FrameIndex = (anim.FrameIndex + 1) % len(anim.Frames)
+		} else if anim.FrameIndex < len(anim.Frames)-1 {
+			anim.FrameIndex++
+		}
+	}
 }
 
 func (a *Animator) DrawFrame(screen *ebiten.Image, x, y float64, flip bool) {
-    anim := a.Animations[a.CurrentAnimation]
-    if len(anim.Frames) == 0 {
-        return
-    }
+	anim := a.Animations[a.CurrentAnimation]
+	if len(anim.Frames) == 0 {
+		return
+	}
 	currentFrame := anim.Frames[anim.FrameIndex]
 	frameWidth := float64(currentFrame.Bounds().Dx())
-    op := &ebiten.DrawImageOptions{}
-    if flip {
-        op.GeoM.Scale(-a.SpriteScaleX, a.SpriteScaleY)
-        op.GeoM.Translate(x+(frameWidth/2)*a.SpriteScaleX, y)
-    } else {
-        op.GeoM.Scale(a.SpriteScaleX, a.SpriteScaleY)
-        op.GeoM.Translate(x-(frameWidth/2)*a.SpriteScaleX, y)
-    }
-    screen.DrawImage(anim.Frames[anim.FrameIndex], op)
+
+	op := &ebiten.DrawImageOptions{}
+	if flip {
+		op.GeoM.Scale(-a.SpriteScaleX, a.SpriteScaleY)
+		op.GeoM.Translate(x+(frameWidth/2)*a.SpriteScaleX-anim.XO, y-anim.YO)
+	} else {
+		op.GeoM.Scale(a.SpriteScaleX, a.SpriteScaleY)
+		op.GeoM.Translate(x-(frameWidth/2)*a.SpriteScaleX+anim.XO, y-anim.YO)
+	}
+	screen.DrawImage(currentFrame, op)
 }

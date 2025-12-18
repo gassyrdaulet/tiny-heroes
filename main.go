@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"image/color"
 	"log"
 
 	"github.com/gassyrdaulet/go-fighting-game/base"
@@ -11,15 +10,16 @@ import (
 	"github.com/gassyrdaulet/go-fighting-game/constants"
 	"github.com/gassyrdaulet/go-fighting-game/controllers"
 	"github.com/gassyrdaulet/go-fighting-game/entities/actor"
+	"github.com/gassyrdaulet/go-fighting-game/utils"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
-	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
 type Game struct {
 	world   *physics.World
 	tileMap *base.TileMap
-	camera *base.Camera
+	camera  *base.Camera
+	bg      *base.Background
 
 	players []*actor.Actor
 }
@@ -33,7 +33,8 @@ func (g *Game) Update() error {
 	for _, p := range g.players {
 		playersPos = append(playersPos, p)
 	}
-	g.camera.UpdateFromPlayers(playersPos)
+
+	g.camera.UpdateFromPlayers(playersPos, g.world.Width, g.world.Height)
 
 	g.world.UpdateVirtualBounds(g.camera)
 
@@ -41,27 +42,9 @@ func (g *Game) Update() error {
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	screen.Fill(color.RGBA{30, 30, 50, 255})
+	g.bg.Draw(screen, g.camera)
 
-	for y := 0; y < g.tileMap.Height; y++ {
-		for x := 0; x < g.tileMap.Width; x++ {
-			if g.tileMap.Tiles[y][x] == 1 {
-				screenX, screenY := g.camera.WorldToScreen(
-					float64(x*constants.TileSize), 
-					float64(y*constants.TileSize),
-				)
-				vector.FillRect(
-					screen,
-					float32(screenX),
-					float32(screenY),
-					constants.TileSize,
-					constants.TileSize,
-					color.RGBA{80, 80, 80, 255},
-					false,
-				)
-			}
-		}
-	}
+	g.tileMap.Draw(screen, g.camera)
 
 	for _, a := range g.players {
 		sx, sy := g.camera.WorldToScreen(a.X, a.Y)
@@ -87,27 +70,90 @@ func main() {
 		log.Fatal(err)
 	}
 
-	tileMap := &base.TileMap{
-		Width:  100,
-		Height: 20,
-		Tiles:  make([][]int, 20),
+	bg := &base.Background{
+		Layers: []*base.BackgroundLayer{
+			{Image: utils.MustLoad("assets/backgrounds/1/8.png"), Scroll: 0.8},
+			{Image: utils.MustLoad("assets/backgrounds/1/7.png"), Scroll: 0.7},
+			{Image: utils.MustLoad("assets/backgrounds/1/6.png"), Scroll: 0.6},
+			{Image: utils.MustLoad("assets/backgrounds/1/5.png"), Scroll: 0.5},
+			{Image: utils.MustLoad("assets/backgrounds/1/4.png"), Scroll: 0.4},
+			{Image: utils.MustLoad("assets/backgrounds/1/3.png"), Scroll: 0.3},
+			{Image: utils.MustLoad("assets/backgrounds/1/2.png"), Scroll: 0.2},
+			{Image: utils.MustLoad("assets/backgrounds/1/1.png"), Scroll: 0.1},
+		},
+	}
+	tileMap := base.NewTileMap(100, 20, constants.TileSize)
+
+	tile1, _ := utils.LoadImage("assets/tiles/tile1.png")
+	tile2, _ := utils.LoadImage("assets/tiles/tile2.png")
+	tile3, _ := utils.LoadImage("assets/tiles/tile3.png")
+	tile8, _ := utils.LoadImage("assets/tiles/tile8.png")
+	tile9, _ := utils.LoadImage("assets/tiles/tile9.png")
+	tile10, _ := utils.LoadImage("assets/tiles/tile10.png")
+	tile12, _ := utils.LoadImage("assets/tiles/tile12.png")
+	tile13, _ := utils.LoadImage("assets/tiles/tile13.png")
+	tile22, _ := utils.LoadImage("assets/tiles/tile22.png")
+	tile23, _ := utils.LoadImage("assets/tiles/tile23.png")
+	tile24, _ := utils.LoadImage("assets/tiles/tile24.png")
+	tile25, _ := utils.LoadImage("assets/tiles/tile25.png")
+	tile26, _ := utils.LoadImage("assets/tiles/tile26.png")
+	tile27, _ := utils.LoadImage("assets/tiles/tile27.png")
+	tile39, _ := utils.LoadImage("assets/tiles/tile39.png")
+	tile40, _ := utils.LoadImage("assets/tiles/tile40.png")
+	tile41, _ := utils.LoadImage("assets/tiles/tile41.png")
+	tile42, _ := utils.LoadImage("assets/tiles/tile42.png")
+
+	tileMap.AddTileType(1, base.Solid, tile1)
+	tileMap.AddTileType(2, base.Solid, tile2)
+	tileMap.AddTileType(3, base.Solid, tile3)
+	tileMap.AddTileType(8, base.Solid, tile8)
+	tileMap.AddTileType(9, base.Solid, tile9)
+	tileMap.AddTileType(10, base.Solid, tile10)
+	tileMap.AddTileType(12, base.Solid, tile12)
+	tileMap.AddTileType(13, base.Solid, tile13)
+	tileMap.AddTileType(22, base.Solid, tile22)
+	tileMap.AddTileType(22, base.Solid, tile22)
+	tileMap.AddTileType(23, base.Solid, tile23)
+	tileMap.AddTileType(24, base.Solid, tile24)
+	tileMap.AddTileType(25, base.Solid, tile25)
+	tileMap.AddTileType(26, base.Solid, tile26)
+	tileMap.AddTileType(27, base.Solid, tile27)
+	tileMap.AddTileType(39, base.Solid, tile39)
+	tileMap.AddTileType(40, base.Solid, tile40)
+	tileMap.AddTileType(41, base.Solid, tile41)
+	tileMap.AddTileType(42, base.Solid, tile42)
+
+	for _, x := range []int{0, 1, 2, 3, 4, 9, 10, 11, 12} {
+		tileMap.SetTile(x, 17, 2)
+	}
+	for x := range 60 {
+		tileMap.SetTile(x+13, 17, 2)
+		tileMap.SetTile(x+13, 18, 9)
+	}
+	for _, x := range []int{0, 1, 2, 3, 4, 9, 10, 11, 12} {
+		tileMap.SetTile(x, 18, 9)
+	}
+	for x := range 72 {
+		tileMap.SetTile(x, 19, 9)
 	}
 
-	for y := range 20 {
-		tileMap.Tiles[y] = make([]int, 100)
-	}
+	tileMap.SetTile(5, 17, 3)
+	tileMap.SetTile(8, 17, 1)
+	tileMap.SetTile(5, 18, 12)
+	tileMap.SetTile(6, 18, 2)
+	tileMap.SetTile(7, 18, 2)
+	tileMap.SetTile(8, 18, 13)
 
-	for x := range 100 {
-		tileMap.Tiles[18][x] = 1
-	}
-
-	for y := range 10 {
-		tileMap.Tiles[18-y][1] = 1
-	}
-
-	tileMap.Tiles[15][19] = 1
-
-	tileMap.Tiles[17][14] = 1
+	tileMap.SetTile(16, 15, 22)
+	tileMap.SetTile(17, 15, 24)
+	tileMap.SetTile(19, 13, 22)
+	tileMap.SetTile(20, 13, 23)
+	tileMap.SetTile(21, 13, 24)
+	tileMap.SetTile(16, 11, 24)
+	tileMap.SetTile(15, 11, 22)
+	tileMap.SetTile(14, 9, 25)
+	tileMap.SetTile(15, 6, 22)
+	tileMap.SetTile(16, 6, 24)
 
 	world := physics.NewWorld(tileMap)
 
@@ -116,10 +162,10 @@ func main() {
 		100,
 		"blue",
 		&controllers.KeyboardController{
-			Left: ebiten.KeyLeft,
+			Left:  ebiten.KeyLeft,
 			Right: ebiten.KeyRight,
-			Up: ebiten.KeyUp,
-			Down: ebiten.KeyDown,
+			Up:    ebiten.KeyUp,
+			Down:  ebiten.KeyDown,
 		},
 		1,
 	)
@@ -128,24 +174,38 @@ func main() {
 		100,
 		"pink",
 		&controllers.KeyboardController{
-			Left: ebiten.KeyA,
+			Left:  ebiten.KeyA,
 			Right: ebiten.KeyD,
-			Up: ebiten.KeyW,
-			Down: ebiten.KeyD,
+			Up:    ebiten.KeyW,
+			Down:  ebiten.KeyD,
 		},
 		1,
 	)
+	// actor3 := actor.NewActor(
+	// 	200,
+	// 	100,
+	// 	"white",
+	// 	&controllers.KeyboardController{
+	// 		Left:  ebiten.KeyJ,
+	// 		Right: ebiten.KeyL,
+	// 		Up:    ebiten.KeyI,
+	// 		Down:  ebiten.KeyK,
+	// 	},
+	// 	1,
+	// )
 
 	game := &Game{
 		world:   world,
 		tileMap: tileMap,
 		camera: &base.Camera{
-			Width: constants.ScreenW,
+			Width:  constants.ScreenW,
 			Height: constants.ScreenH,
 		},
+		bg: bg,
 		players: []*actor.Actor{
 			actor1,
 			actor2,
+			// actor3,
 		},
 	}
 
