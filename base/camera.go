@@ -60,7 +60,7 @@ func (c *Camera) UpdateFromPlayers(players []PlayerPosition, worldW, worldH floa
 	targetX = u.Clamp(targetX, halfW, worldW-halfW)
 	targetY = u.Clamp(targetY, halfH, worldH-halfH)
 
-	const smooth = 0.1
+	const smooth = 0.45
 	c.X = u.Lerp(c.X, targetX, smooth)
 	c.Y = u.Lerp(c.Y, targetY, smooth)
 }

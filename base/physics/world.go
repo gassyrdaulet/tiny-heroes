@@ -42,41 +42,62 @@ func (w *World) Step(p PhysicalBody) {
 		}
 	}
 
-	onGround := false
-
-	if vy != 0 {
-		if vy > 0 {
-			tileY := int((newY + h) / constants.TileSize)
-			tileX1 := int((newX - wid/2) / constants.TileSize)
-			tileX2 := int((newX + wid/2) / constants.TileSize)
-
-			for tx := tileX1; tx <= tileX2; tx++ {
-				if w.Tiles.IsSolid(tx, tileY) {
-					newY = float64(tileY)*constants.TileSize - h
-					vy = 0
-					onGround = true
-					break
-				}
-			}
-		} else {
-			tileY := int(newY / constants.TileSize)
-			tileX1 := int((newX - wid/2) / constants.TileSize)
-			tileX2 := int((newX + wid/2) / constants.TileSize)
-
-			for tx := tileX1; tx <= tileX2; tx++ {
-				if w.Tiles.IsSolid(tx, tileY) {
-					newY = float64(tileY+1) * constants.TileSize
-					vy = 0
-					break
-				}
-			}
-		}
-	}
+	var onGround bool
+	newY, onGround = resolveVerticalCollision(
+		w, y, newX, newY, wid, h, &vy,
+	)
 
 	p.SetOnGround(onGround)
 	p.SetPosition(newX, newY)
 	p.SetVelocity(vx, vy)
 }
+
+func resolveVerticalCollision(w *World, oldY, newX, newY, wWidth, wHeight float64, vy *float64) (float64, bool) {
+	onGround := false
+
+	if *vy == 0 {
+		return newY, onGround
+	}
+
+	stepSign := 1.0
+	if *vy < 0 {
+		stepSign = -1.0
+	}
+
+	tileX1 := int((newX - wWidth/2) / constants.TileSize)
+	tileX2 := int((newX + wWidth/2) / constants.TileSize)
+
+	if stepSign > 0 {
+		tileYStart := int((oldY + wHeight) / constants.TileSize)
+		tileYEnd := int((newY + wHeight) / constants.TileSize)
+
+		for ty := tileYStart; ty <= tileYEnd; ty++ {
+			for tx := tileX1; tx <= tileX2; tx++ {
+				if w.Tiles.IsSolid(tx, ty) {
+					newY = float64(ty)*constants.TileSize - wHeight
+					*vy = 0
+					onGround = true
+					return newY, onGround
+				}
+			}
+		}
+	} else {
+		tileYStart := int(newY / constants.TileSize)
+		tileYEnd := int(oldY / constants.TileSize)
+		for ty := tileYEnd; ty >= tileYStart; ty-- {
+			for tx := tileX1; tx <= tileX2; tx++ {
+				if w.Tiles.IsSolid(tx, ty) {
+					newY = float64(ty+1) * constants.TileSize
+					*vy = 0
+					return newY, onGround
+				}
+			}
+		}
+	}
+
+	return newY, onGround
+}
+
 
 func (w *World) UpdateVirtualBounds(cam *base.Camera) {
 	w.VirtualBorderLeftX = cam.X - float64(cam.Width)/2

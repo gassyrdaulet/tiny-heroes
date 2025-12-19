@@ -53,7 +53,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 	ebitenutil.DebugPrint(
 		screen,
-		fmt.Sprintf("FPS: %.0f X: %.0f Y: %.0f", ebiten.ActualFPS(), g.players[0].X, g.players[0].Y),
+		fmt.Sprintf("FPS: %.0f cam.X: %.0f cam.Y: %.0f", ebiten.ActualFPS(), g.camera.X, g.camera.Y),
 	)
 }
 
@@ -70,19 +70,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	bg := &base.Background{
-		Layers: []*base.BackgroundLayer{
-			{Image: utils.MustLoad("assets/backgrounds/1/8.png"), Scroll: 0.8},
-			{Image: utils.MustLoad("assets/backgrounds/1/7.png"), Scroll: 0.7},
-			{Image: utils.MustLoad("assets/backgrounds/1/6.png"), Scroll: 0.6},
-			{Image: utils.MustLoad("assets/backgrounds/1/5.png"), Scroll: 0.5},
-			{Image: utils.MustLoad("assets/backgrounds/1/4.png"), Scroll: 0.4},
-			{Image: utils.MustLoad("assets/backgrounds/1/3.png"), Scroll: 0.3},
-			{Image: utils.MustLoad("assets/backgrounds/1/2.png"), Scroll: 0.2},
-			{Image: utils.MustLoad("assets/backgrounds/1/1.png"), Scroll: 0.1},
-		},
-	}
-	tileMap := base.NewTileMap(100, 20, constants.TileSize)
+	tileMap := base.NewTileMap(100, 300, constants.TileSize)
 
 	tile1, _ := utils.LoadImage("assets/tiles/tile1.png")
 	tile2, _ := utils.LoadImage("assets/tiles/tile2.png")
@@ -123,18 +111,24 @@ func main() {
 	tileMap.AddTileType(41, base.Solid, tile41)
 	tileMap.AddTileType(42, base.Solid, tile42)
 
-	for _, x := range []int{0, 1, 2, 3, 4, 9, 10, 11, 12} {
+	for _, x := range []int{1, 2, 3, 4, 9, 10, 11, 12} {
 		tileMap.SetTile(x, 17, 2)
 	}
 	for x := range 60 {
 		tileMap.SetTile(x+13, 17, 2)
 		tileMap.SetTile(x+13, 18, 9)
 	}
-	for _, x := range []int{0, 1, 2, 3, 4, 9, 10, 11, 12} {
+	for _, x := range []int{1, 2, 3, 4, 9, 10, 11, 12} {
 		tileMap.SetTile(x, 18, 9)
 	}
 	for x := range 72 {
-		tileMap.SetTile(x, 19, 9)
+		tileMap.SetTile(x + 1, 19, 9)
+	}
+	for x := range 99 {
+		tileMap.SetTile(x + 1, 199, 2)
+	}
+	for x := range 40 {
+		tileMap.SetTile(x, 298, 2)
 	}
 
 	tileMap.SetTile(5, 17, 3)
@@ -155,6 +149,77 @@ func main() {
 	tileMap.SetTile(15, 6, 22)
 	tileMap.SetTile(16, 6, 24)
 
+	GroundY := float64(tileMap.Height * constants.TileSize)
+
+	bg := &base.Background{
+		Layers: []*base.BackgroundLayer{
+			// 8 — небо
+			{
+				Image:    utils.MustLoad("assets/backgrounds/1/8.png"),
+				ScrollX:  0.0,
+				ScrollY:  0.0,
+				BaseY:    GroundY,
+				StretchY: true,
+			},
+
+			// 7 — облака
+			{
+				Image:   utils.MustLoad("assets/backgrounds/1/7.png"),
+				ScrollX: 0.05,
+				ScrollY: 0.03,
+				BaseY:   GroundY,
+			},
+
+			// 6 — дальние горы
+			{
+				Image:   utils.MustLoad("assets/backgrounds/1/6.png"),
+				ScrollX: 0.10,
+				ScrollY: 0.05,
+				BaseY:   GroundY,
+			},
+
+			// 5 — дальний горизонт
+			{
+				Image:   utils.MustLoad("assets/backgrounds/1/5.png"),
+				ScrollX: 0.20,
+				ScrollY: 0.06,
+				BaseY:   GroundY,
+			},
+
+			// 4 — средний горизонт
+			{
+				Image:   utils.MustLoad("assets/backgrounds/1/4.png"),
+				ScrollX: 0.30,
+				ScrollY: 0.07,
+				BaseY:   GroundY,
+			},
+
+			// 3 — ближний горизонт
+			{
+				Image:   utils.MustLoad("assets/backgrounds/1/3.png"),
+				ScrollX: 0.45,
+				ScrollY: 0.08,
+				BaseY:   GroundY,
+			},
+
+			// 2 — очень близкий горизонт
+			{
+				Image:   utils.MustLoad("assets/backgrounds/1/2.png"),
+				ScrollX: 0.65,
+				ScrollY: 0.09,
+				BaseY:   GroundY,
+			},
+
+			// 1 — трава (передний план)
+			{
+				Image:   utils.MustLoad("assets/backgrounds/1/1.png"),
+				ScrollX: 0.90,
+				ScrollY: 1,
+				BaseY:   GroundY,
+			},
+		},
+	}
+
 	world := physics.NewWorld(tileMap)
 
 	actor1 := actor.NewActor(
@@ -172,7 +237,7 @@ func main() {
 	actor2 := actor.NewActor(
 		150,
 		100,
-		"pink",
+		"blue",
 		&controllers.KeyboardController{
 			Left:  ebiten.KeyA,
 			Right: ebiten.KeyD,

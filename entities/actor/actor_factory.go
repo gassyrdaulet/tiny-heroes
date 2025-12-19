@@ -4,10 +4,24 @@ import (
 	b "github.com/gassyrdaulet/go-fighting-game/base"
 	p "github.com/gassyrdaulet/go-fighting-game/base/physics"
 	c "github.com/gassyrdaulet/go-fighting-game/characters"
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 func NewActor(x, y float64, characterID string, controller b.Controller, direction int) *Actor {
 	char := c.Characters[characterID]
+
+	animCopy := make(map[string]*b.Animation)
+    for k, v := range char.Animations {
+        framesCopy := make([]*ebiten.Image, len(v.Frames))
+        copy(framesCopy, v.Frames)
+        animCopy[k] = &b.Animation{
+            Frames:     framesCopy,
+            FrameSpeed: v.FrameSpeed,
+            Loop:       v.Loop,
+            XO:         v.XO,
+            YO:         v.YO,
+        }
+    }
 
 	return &Actor{
 		Body: &p.Body{
@@ -18,7 +32,7 @@ func NewActor(x, y float64, characterID string, controller b.Controller, directi
 			Weight: char.Weight,
 		},
 		StateMachine: b.NewStateMachine(Idle),
-		Animator: b.NewAnimator(char.Animations, string(Idle)),
+		Animator: b.NewAnimator(animCopy, string(Idle)),
 		Character:   char,
 		Controller: controller,
 		MaxHp:          char.MaxHP,
