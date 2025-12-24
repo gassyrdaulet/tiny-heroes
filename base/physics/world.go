@@ -12,6 +12,15 @@ type World struct {
 	VirtualBorderLeftX  float64
 	VirtualBorderRightX float64
 	Width, Height       float64
+	paused 				bool
+}
+
+func (w *World) SetPaused(p bool) {
+	w.paused = p
+}
+
+func (w *World) IsPaused() bool {
+	return w.paused
 }
 
 func (w *World) Step(p PhysicalBody) {
@@ -111,4 +120,12 @@ func NewWorld(tiles *base.TileMap) *World {
 	w.Width = float64(tiles.Width) * constants.TileSize
 	w.Height = float64(tiles.Height) * constants.TileSize
 	return w
+}
+
+func (w *World) Clear() {
+	w.Tiles = nil
+	w.VirtualBorderLeftX = 0
+	w.VirtualBorderRightX = 0
+	w.Width = 0
+	w.Height = 0
 }
