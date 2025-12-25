@@ -15,14 +15,6 @@ type World struct {
 	paused 				bool
 }
 
-func (w *World) SetPaused(p bool) {
-	w.paused = p
-}
-
-func (w *World) IsPaused() bool {
-	return w.paused
-}
-
 func (w *World) Step(p PhysicalBody) {
 	x, y := p.Position()
 	vx, vy := p.Velocity()
@@ -35,7 +27,8 @@ func (w *World) Step(p PhysicalBody) {
 	newY := y + vy
 
 	if vx != 0 {
-		if newX-wid/2 < w.VirtualBorderLeftX || newX+wid/2 > w.VirtualBorderRightX {
+		if ((newX-wid/2 < w.VirtualBorderLeftX || newX+wid/2 > w.VirtualBorderRightX) && constants.VirtualBorders) ||
+			(newX-wid/2 < 0 || newX+wid/2 > w.Width) {
 			newX = x
 		} else {
 			tileX := int((newX + math.Copysign(wid/2, vx)) / constants.TileSize)
@@ -78,8 +71,7 @@ func resolveVerticalCollision(w *World, oldY, newX, newY, wWidth, wHeight float6
 
 	if stepSign > 0 {
 		tileYStart := int((oldY + wHeight) / constants.TileSize)
-		tileYEnd := int((newY + wHeight) / constants.TileSize)
-
+		tileYEnd   := int((newY + wHeight) / constants.TileSize)
 		for ty := tileYStart; ty <= tileYEnd; ty++ {
 			for tx := tileX1; tx <= tileX2; tx++ {
 				if w.Tiles.IsSolid(tx, ty) {
@@ -88,6 +80,16 @@ func resolveVerticalCollision(w *World, oldY, newX, newY, wWidth, wHeight float6
 					onGround = true
 					return newY, onGround
 				}
+
+				if w.Tiles.IsPlatform(tx, ty) {
+					tileTop := float64(ty * constants.TileSize)
+					if oldY+wHeight <= tileTop {
+						newY = tileTop - wHeight
+						*vy = 0
+						onGround = true
+						return newY, onGround
+					}
+				}
 			}
 		}
 	} else {
@@ -95,7 +97,7 @@ func resolveVerticalCollision(w *World, oldY, newX, newY, wWidth, wHeight float6
 		tileYEnd := int(oldY / constants.TileSize)
 		for ty := tileYEnd; ty >= tileYStart; ty-- {
 			for tx := tileX1; tx <= tileX2; tx++ {
-				if w.Tiles.IsSolid(tx, ty) {
+				if w.Tiles.IsSolid(tx, ty){
 					newY = float64(ty+1) * constants.TileSize
 					*vy = 0
 					return newY, onGround

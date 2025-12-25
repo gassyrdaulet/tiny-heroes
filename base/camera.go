@@ -25,34 +25,33 @@ func (c *Camera) UpdateFromPlayers(players []PlayerPosition, worldW, worldH floa
 		return
 	}
 
-	minX, minY := players[0].Position()
-	maxX, maxY := minX, minY
+	anchorX, anchorY := players[0].Position()
 
-	for _, p := range players {
-		pX, pY := p.Position()
+	minX, minY := anchorX, anchorY
+	maxX, maxY := anchorX, anchorY
 
-		if pX < minX {
-			minX = pX
+	for i := 1; i < len(players); i++ {
+		x, y := players[i].Position()
+
+		if x < minX {
+			minX = x
 		}
-		if pY < minY {
-			minY = pY
+		if y < minY {
+			minY = y
 		}
-		if pX > maxX {
-			maxX = pX
+		if x > maxX {
+			maxX = x
 		}
-		if pY > maxY {
-			maxY = pY
+		if y > maxY {
+			maxY = y
 		}
 	}
 
-	targetX, targetY := c.X, c.Y
+	groupCenterX := (minX + maxX) / 2
+	groupCenterY := (minY + maxY) / 2
 
-	if maxX-minX < constants.ScreenW-constants.CameraMaxOffsetX {
-		targetX = (minX + maxX) / 2
-	}
-	if maxY-minY < constants.ScreenH-constants.CameraMaxOffsetY {
-		targetY = (minY + maxY) / 2
-	}
+	targetX := u.Lerp(groupCenterX, anchorX, constants.CameraAnchorWeight)
+	targetY := u.Lerp(groupCenterY, anchorY, constants.CameraAnchorWeight)
 
 	halfW := float64(constants.ScreenW) / 2
 	halfH := float64(constants.ScreenH) / 2
@@ -60,7 +59,7 @@ func (c *Camera) UpdateFromPlayers(players []PlayerPosition, worldW, worldH floa
 	targetX = u.Clamp(targetX, halfW, worldW-halfW)
 	targetY = u.Clamp(targetY, halfH, worldH-halfH)
 
-	const smooth = 0.25
+	const smooth = constants.CameraSmoothness
 	c.X = u.Lerp(c.X, targetX, smooth)
 	c.Y = u.Lerp(c.Y, targetY, smooth)
 }

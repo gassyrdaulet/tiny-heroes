@@ -11,12 +11,12 @@ type BackgroundLayer struct {
 	Image  *ebiten.Image
 	ScrollX float64
 	ScrollY  float64
-	BaseY    float64
 	StretchY bool
 }
 
 type Background struct {
 	Layers []*BackgroundLayer
+	BaseY    float64
 }
 
 func (bg *Background) Draw(screen *ebiten.Image, cam *Camera) {
@@ -30,7 +30,7 @@ func (bg *Background) Draw(screen *ebiten.Image, cam *Camera) {
 		imgH := float64(layer.Image.Bounds().Dy())
 
 		offsetX := -camX * layer.ScrollX
-		offsetY := -(camY - layer.BaseY) * layer.ScrollY
+		offsetY := -(camY - bg.BaseY) * layer.ScrollY
 
 		startX := math.Mod(offsetX, imgW)
 		if startX > 0 {

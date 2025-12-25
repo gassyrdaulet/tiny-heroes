@@ -66,6 +66,14 @@ func (m *TileMap) IsSolid(tx, ty int) bool {
 	return tile.Type == Solid
 }
 
+func (m *TileMap) IsPlatform(tx, ty int) bool {
+	if ty < 0 || ty >= m.Height || tx < 0 || tx >= m.Width {
+		return false
+	}
+	tile := m.Tiles[ty][tx]
+	return tile.Type == Platform
+}
+
 func (m *TileMap) Draw(screen *ebiten.Image, cam *Camera) {
 	camX, camY := cam.TopLeft()
 

@@ -1,0 +1,241 @@
+{
+    "characters": [
+        {
+            "id": "blue",
+            "name": "Blue",
+            "speed": 3.8,
+            "jumpForce": -9.5,
+            "damage": 10,
+            "maxHP": 100,
+            "weight": 0.9,
+            "width": 12,
+            "height": 26,
+            "chargingJumpTicks": 13,
+            "animations": [
+                {
+                    "name": "idle",
+                    "image": "assets/sprites/3/Idle.png",
+                    "frameWidth": 42,
+                    "frameHeight": 42,
+                    "frames": 4,
+                    "startX": 0,
+                    "startY": 0,
+                    "speed": 6,
+                    "offsetX": 5,
+                    "offsetY": 16,
+                    "loop": true
+                },
+                {
+                    "name": "run",
+                    "image": "assets/sprites/3/Run.png",
+                    "frameWidth": 42,
+                    "frameHeight": 42,
+                    "frames": 6,
+                    "startX": 0,
+                    "startY": 0,
+                    "speed": 6,
+                    "offsetX": 5,
+                    "offsetY": 16,
+                    "loop": true
+                },
+                {
+                    "name": "charging_jump",
+                    "image": "assets/sprites/3/Jump.png",
+                    "frameWidth": 42,
+                    "frameHeight": 42,
+                    "frames": 3,
+                    "startX": 0,
+                    "startY": 0,
+                    "speed": 6,
+                    "offsetX": 5,
+                    "offsetY": 16,
+                    "loop": false
+                },
+                {
+                    "name": "jump",
+                    "image": "assets/sprites/3/Jump.png",
+                    "frameWidth": 42,
+                    "frameHeight": 42,
+                    "frames": 1,
+                    "startX": 126,
+                    "startY": 0,
+                    "speed": 6,
+                    "offsetX": 5,
+                    "offsetY": 16,
+                    "loop": false
+                },
+                {
+                    "name": "fall",
+                    "image": "assets/sprites/3/Jump.png",
+                    "frameWidth": 42,
+                    "frameHeight": 42,
+                    "frames": 1,
+                    "startX": 252,
+                    "startY": 0,
+                    "speed": 6,
+                    "offsetX": 5,
+                    "offsetY": 16,
+                    "loop": false
+                }
+            ]
+        },
+        {
+            "id": "pink",
+            "name": "Pink",
+            "speed": 4.2,
+            "jumpForce": -9.5,
+            "damage": 11,
+            "maxHP": 75,
+            "weight": 0.9,
+            "width": 12,
+            "height": 26,
+            "chargingJumpTicks": 26,
+            "animations": [
+                {
+                    "name": "idle",
+                    "image": "assets/sprites/1/Idle.png",
+                    "frameWidth": 42,
+                    "frameHeight": 42,
+                    "frames": 4,
+                    "startX": 0,
+                    "startY": 0,
+                    "speed": 6,
+                    "offsetX": 5,
+                    "offsetY": 16,
+                    "loop": true
+                },
+                {
+                    "name": "run",
+                    "image": "assets/sprites/1/Run.png",
+                    "frameWidth": 42,
+                    "frameHeight": 42,
+                    "frames": 6,
+                    "startX": 0,
+                    "startY": 0,
+                    "speed": 6,
+                    "offsetX": 5,
+                    "offsetY": 16,
+                    "loop": true
+                },
+                {
+                    "name": "charging_jump",
+                    "image": "assets/sprites/1/Jump.png",
+                    "frameWidth": 42,
+                    "frameHeight": 42,
+                    "frames": 3,
+                    "startX": 0,
+                    "startY": 0,
+                    "speed": 6,
+                    "offsetX": 5,
+                    "offsetY": 16,
+                    "loop": false
+                },
+                {
+                    "name": "jump",
+                    "image": "assets/sprites/1/Jump.png",
+                    "frameWidth": 42,
+                    "frameHeight": 42,
+                    "frames": 1,
+                    "startX": 126,
+                    "startY": 0,
+                    "speed": 6,
+                    "offsetX": 5,
+                    "offsetY": 16,
+                    "loop": false
+                },
+                {
+                    "name": "fall",
+                    "image": "assets/sprites/1/Jump.png",
+                    "frameWidth": 42,
+                    "frameHeight": 42,
+                    "frames": 1,
+                    "startX": 252,
+                    "startY": 0,
+                    "speed": 6,
+                    "offsetX": 5,
+                    "offsetY": 16,
+                    "loop": false
+                }
+            ]
+        },
+        {
+            "id": "white",
+            "name": "White",
+            "speed": 3.6,
+            "jumpForce": -9.0,
+            "damage": 15,
+            "maxHP": 140,
+            "weight": 1.1,
+            "width": 12,
+            "height": 26,
+            "chargingJumpTicks": 20,
+            "animations": [
+                {
+                    "name": "idle",
+                    "image": "assets/sprites/2/Idle.png",
+                    "frameWidth": 42,
+                    "frameHeight": 42,
+                    "frames": 4,
+                    "startX": 0,
+                    "startY": 0,
+                    "speed": 6,
+                    "offsetX": 5,
+                    "offsetY": 16,
+                    "loop": true
+                },
+                {
+                    "name": "run",
+                    "image": "assets/sprites/2/Run.png",
+                    "frameWidth": 42,
+                    "frameHeight": 42,
+                    "frames": 6,
+                    "startX": 0,
+                    "startY": 0,
+                    "speed": 6,
+                    "offsetX": 5,
+                    "offsetY": 16,
+                    "loop": true
+                },
+                {
+                    "name": "charging_jump",
+                    "image": "assets/sprites/2/Jump.png",
+                    "frameWidth": 42,
+                    "frameHeight": 42,
+                    "frames": 3,
+                    "startX": 0,
+                    "startY": 0,
+                    "speed": 6,
+                    "offsetX": 5,
+                    "offsetY": 16,
+                    "loop": false
+                },
+                {
+                    "name": "jump",
+                    "image": "assets/sprites/2/Jump.png",
+                    "frameWidth": 42,
+                    "frameHeight": 42,
+                    "frames": 1,
+                    "startX": 126,
+                    "startY": 0,
+                    "speed": 6,
+                    "offsetX": 5,
+                    "offsetY": 16,
+                    "loop": false
+                },
+                {
+                    "name": "fall",
+                    "image": "assets/sprites/2/Jump.png",
+                    "frameWidth": 42,
+                    "frameHeight": 42,
+                    "frames": 1,
+                    "startX": 252,
+                    "startY": 0,
+                    "speed": 6,
+                    "offsetX": 5,
+                    "offsetY": 16,
+                    "loop": false
+                }
+            ]
+        }
+    ]
+}

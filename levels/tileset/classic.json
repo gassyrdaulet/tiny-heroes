@@ -1,0 +1,22 @@
+{
+  "tiles": [
+    { "id": 1, "type": "solid", "image": "assets/tilesets/1/tile1.png" },
+    { "id": 2, "type": "solid", "image": "assets/tilesets/1/tile2.png" },
+    { "id": 3, "type": "solid", "image": "assets/tilesets/1/tile3.png" },
+    { "id": 4, "type": "solid", "image": "assets/tilesets/1/tile4.png" },
+    { "id": 8, "type": "solid", "image": "assets/tilesets/1/tile8.png" },
+    { "id": 9, "type": "solid", "image": "assets/tilesets/1/tile9.png" },
+    { "id": 10, "type": "solid", "image": "assets/tilesets/1/tile10.png" },
+    { "id": 12, "type": "solid", "image": "assets/tilesets/1/tile12.png" },
+    { "id": 13, "type": "solid", "image": "assets/tilesets/1/tile13.png" },
+    { "id": 19, "type": "solid", "image": "assets/tilesets/1/tile19.png" },
+    { "id": 21, "type": "platform", "image": "assets/tilesets/1/tile21.png" },
+    { "id": 22, "type": "solid", "image": "assets/tilesets/1/tile22.png" },
+    { "id": 23, "type": "solid", "image": "assets/tilesets/1/tile23.png" },
+    { "id": 24, "type": "solid", "image": "assets/tilesets/1/tile24.png" },
+    { "id": 25, "type": "solid", "image": "assets/tilesets/1/tile25.png" },
+    { "id": 36, "type": "platform", "image": "assets/tilesets/1/tile36.png" },
+    { "id": 37, "type": "platform", "image": "assets/tilesets/1/tile37.png" },
+    { "id": 38, "type": "platform", "image": "assets/tilesets/1/tile38.png" }
+  ]
+}

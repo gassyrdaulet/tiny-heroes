@@ -46,7 +46,7 @@ func (a *Actor) ChargeJump() {
 		a.ChangeState(ChargeJump)
 		a.ChargingJumpTicks = a.ChargingJumpTicksMax
 		if a.VX != 0 {
-			a.JumpForceCurrent = a.JumpForce * 1.2
+			a.JumpForceCurrent = a.JumpForce * 1.1
 		} else {
 			a.JumpForceCurrent = a.JumpForce
 		}
