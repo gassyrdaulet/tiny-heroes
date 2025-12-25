@@ -18,15 +18,16 @@ import (
 )
 
 type Game struct {
-	state 	*base.StateMachine
-	introTimer int
-	world   *physics.World
-	tileMap *base.TileMap
-	camera  *base.Camera
-	bg      *base.Background
-	players []*actor.Actor
-	levelName string
-	input *Input
+	state       *base.StateMachine
+	introTimer  int
+	world       *physics.World
+	tileMap     *base.TileMap
+	camera      *base.Camera
+	bg          *base.Background
+	players     []*actor.Actor
+	levelName   string
+	input       *Input
+	full_screen bool
 }
 
 type Level struct {
@@ -37,22 +38,22 @@ type Level struct {
 }
 
 type Input struct {
-    prev map[ebiten.Key]bool
+	prev map[ebiten.Key]bool
 }
 
 func NewInput() *Input {
-    return &Input{
-        prev: make(map[ebiten.Key]bool),
-    }
+	return &Input{
+		prev: make(map[ebiten.Key]bool),
+	}
 }
 
 func (i *Input) JustPressed(key ebiten.Key) bool {
-    pressed := ebiten.IsKeyPressed(key)
-    wasPressed := i.prev[key]
+	pressed := ebiten.IsKeyPressed(key)
+	wasPressed := i.prev[key]
 
-    i.prev[key] = pressed
+	i.prev[key] = pressed
 
-    return pressed && !wasPressed
+	return pressed && !wasPressed
 }
 
 const (
@@ -63,6 +64,10 @@ const (
 )
 
 func (g *Game) Update() error {
+	if g.input.JustPressed(ebiten.KeyF11) {
+		g.setFullScreen(!g.full_screen)
+	}
+
 	switch g.state.CurrentState {
 
 	case StateIntro:
@@ -82,23 +87,23 @@ func (g *Game) Update() error {
 }
 
 func (g *Game) updateMenu() {
-    if g.input.JustPressed(ebiten.KeyEnter) {
-        g.state.ChangeState(StatePlaying)
-    }
+	if g.input.JustPressed(ebiten.KeyEnter) {
+		g.state.ChangeState(StatePlaying)
+	}
 
-    if g.input.JustPressed(ebiten.KeyEscape) {
-        os.Exit(0)
-    }
+	if g.input.JustPressed(ebiten.KeyEscape) {
+		os.Exit(0)
+	}
 }
 
 func (g *Game) updatePause() {
-    if g.input.JustPressed(ebiten.KeyEscape) {
-        g.state.ChangeState(StatePlaying)
-    }
+	if g.input.JustPressed(ebiten.KeyEscape) {
+		g.state.ChangeState(StatePlaying)
+	}
 
-    if g.input.JustPressed(ebiten.KeyM) {
-        g.state.ChangeState(StateMainMenu)
-    }
+	if g.input.JustPressed(ebiten.KeyM) {
+		g.state.ChangeState(StateMainMenu)
+	}
 }
 
 func (g *Game) updateIntro() {
@@ -171,8 +176,8 @@ func (g *Game) drawWorld(screen *ebiten.Image) {
 func (g *Game) drawIntro(screen *ebiten.Image) {
 	ebitenutil.DebugPrintAt(
 		screen,
-		"TINY HEROES\n\nPress any key",
-		constants.ScreenW/2-80,
+		"https://github.com/gassyrdaulet/tiny-heroes",
+		constants.ScreenW/2-120,
 		constants.ScreenH/2,
 	)
 }
@@ -215,26 +220,26 @@ func (g *Game) drawHUD(screen *ebiten.Image) {
 }
 
 func (g *Game) drawDebug(screen *ebiten.Image) {
-    if g.camera == nil {
-        ebitenutil.DebugPrintAt(
-            screen,
-            fmt.Sprintf("FPS: %.0f | cam(nil)", ebiten.ActualFPS()),
-            10,
-            constants.ScreenH-20,
-        )
-        return
-    }
-    ebitenutil.DebugPrintAt(
-        screen,
-        fmt.Sprintf(
-            "FPS: %.0f | cam(%.0f, %.0f)",
-            ebiten.ActualFPS(),
-            g.camera.X,
-            g.camera.Y,
-        ),
-        10,
-        constants.ScreenH-20,
-    )
+	if g.camera == nil {
+		ebitenutil.DebugPrintAt(
+			screen,
+			fmt.Sprintf("FPS: %.0f | cam(nil)", ebiten.ActualFPS()),
+			10,
+			constants.ScreenH-20,
+		)
+		return
+	}
+	ebitenutil.DebugPrintAt(
+		screen,
+		fmt.Sprintf(
+			"FPS: %.0f | cam(%.0f, %.0f)",
+			ebiten.ActualFPS(),
+			g.camera.X,
+			g.camera.Y,
+		),
+		10,
+		constants.ScreenH-20,
+	)
 }
 
 func (g *Game) Layout(_, _ int) (int, int) {
@@ -243,8 +248,9 @@ func (g *Game) Layout(_, _ int) (int, int) {
 
 func NewGame() *Game {
 	g := &Game{
-		state: base.NewStateMachine(StateIntro),
-		input: NewInput(),
+		state:       base.NewStateMachine(StateIntro),
+		input:       NewInput(),
+		full_screen: false,
 	}
 	g.state.OnChange = g.onStateChange
 	return g
@@ -273,12 +279,11 @@ func (g *Game) initIntro() {
 }
 
 func (g *Game) initializeNewGame() {
-	// Камера
 	g.camera = &base.Camera{
 		Width:  constants.ScreenW,
 		Height: constants.ScreenH,
 	}
-	// Карта
+
 	tileMap := base.NewTileMap(100, 300, constants.TileSize)
 
 	tile1, _ := utils.LoadImage("assets/tiles/tile1.png")
@@ -357,12 +362,11 @@ func (g *Game) initializeNewGame() {
 	tileMap.SetTile(14, 9, 25)
 	tileMap.SetTile(15, 6, 22)
 	tileMap.SetTile(16, 6, 24)
-	
+
 	GroundY := float64(tileMap.Height * constants.TileSize)
 
 	g.bg = &base.Background{
 		Layers: []*base.BackgroundLayer{
-			// 8 — небо
 			{
 				Image:    utils.MustLoad("assets/backgrounds/1/8.png"),
 				ScrollX:  0.0,
@@ -371,7 +375,6 @@ func (g *Game) initializeNewGame() {
 				StretchY: true,
 			},
 
-			// 7 — облака
 			{
 				Image:   utils.MustLoad("assets/backgrounds/1/7.png"),
 				ScrollX: 0.05,
@@ -379,7 +382,6 @@ func (g *Game) initializeNewGame() {
 				BaseY:   GroundY,
 			},
 
-			// 6 — дальние горы
 			{
 				Image:   utils.MustLoad("assets/backgrounds/1/6.png"),
 				ScrollX: 0.10,
@@ -387,7 +389,6 @@ func (g *Game) initializeNewGame() {
 				BaseY:   GroundY,
 			},
 
-			// 5 — дальний горизонт
 			{
 				Image:   utils.MustLoad("assets/backgrounds/1/5.png"),
 				ScrollX: 0.20,
@@ -395,7 +396,6 @@ func (g *Game) initializeNewGame() {
 				BaseY:   GroundY,
 			},
 
-			// 4 — средний горизонт
 			{
 				Image:   utils.MustLoad("assets/backgrounds/1/4.png"),
 				ScrollX: 0.30,
@@ -403,7 +403,6 @@ func (g *Game) initializeNewGame() {
 				BaseY:   GroundY,
 			},
 
-			// 3 — ближний горизонт
 			{
 				Image:   utils.MustLoad("assets/backgrounds/1/3.png"),
 				ScrollX: 0.45,
@@ -411,7 +410,6 @@ func (g *Game) initializeNewGame() {
 				BaseY:   GroundY,
 			},
 
-			// 2 — очень близкий горизонт
 			{
 				Image:   utils.MustLoad("assets/backgrounds/1/2.png"),
 				ScrollX: 0.65,
@@ -419,7 +417,6 @@ func (g *Game) initializeNewGame() {
 				BaseY:   GroundY,
 			},
 
-			// 1 — трава (передний план)
 			{
 				Image:   utils.MustLoad("assets/backgrounds/1/1.png"),
 				ScrollX: 0.90,
@@ -430,10 +427,8 @@ func (g *Game) initializeNewGame() {
 	}
 	g.tileMap = tileMap
 
-	// Мир
 	g.world = physics.NewWorld(g.tileMap)
 
-	// Игроки
 	g.players = []*actor.Actor{
 		actor.NewActor(
 			100,
@@ -465,12 +460,10 @@ func (g *Game) initializeNewGame() {
 }
 
 func (g *Game) loadLevel(level string) {
-	// очищаем старое
 	g.players = nil
 	g.tileMap = nil
 	g.world.Clear()
 
-	// грузим новое
 	g.tileMap = base.NewTileMap(100, 200, constants.TileSize)
 
 	g.levelName = level
@@ -490,10 +483,14 @@ func (g *Game) mainMenu() {
 	g.camera = nil
 }
 
+func (g *Game) setFullScreen(value bool) {
+	g.full_screen = value
+	ebiten.SetFullscreen(value)
+}
+
 func main() {
 	ebiten.SetTPS(60)
-	// ebiten.SetWindowSize(constants.WindowW, constants.WindowH)
-	ebiten.SetFullscreen(true)
+	ebiten.SetWindowSize(constants.WindowW, constants.WindowH)
 	ebiten.SetWindowTitle("Tiny Heroes")
 
 	if err := characters.LoadCharacterAnimations(); err != nil {
@@ -501,6 +498,7 @@ func main() {
 	}
 
 	game := NewGame()
+	game.setFullScreen(false)
 
 	if err := ebiten.RunGame(game); err != nil {
 		log.Fatal(err)
