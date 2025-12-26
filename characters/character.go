@@ -17,7 +17,12 @@ type Character struct {
 	Width, Height        float64
 	Damage               int
 	MaxHP                int
+    AttackTicks          int
+    AttackCooldownTicks  int
 	ChargingJumpTicks 	 int
+	DyingTicks       	 int
+	HurtingTicks       	 int
+	AttackRange       	 float64
 	Animations           map[string]*base.Animation
 	AnimationsConfigs    []base.AnimationConfig
 }
@@ -27,21 +32,27 @@ type CharactersJSON struct {
 }
 
 type CharacterJSON struct {
-    ID                 string           `json:"id"`
-    Name               string           `json:"name"`
-    Speed              float64          `json:"speed"`
-    JumpForce          float64          `json:"jumpForce"`
-    Damage             int              `json:"damage"`
-    MaxHP              int              `json:"maxHP"`
-    Weight             float64          `json:"weight"`
-    Width              float64          `json:"width"`
-    Height             float64          `json:"height"`
-    ChargingJumpTicks  int              `json:"chargingJumpTicks"`
-    Animations         []AnimationJSON  `json:"animations"`
+    ID                  string           `json:"id"`
+    Name                string           `json:"name"`
+    Speed               float64          `json:"speed"`
+    JumpForce           float64          `json:"jumpForce"`
+    Damage              int              `json:"damage"`
+    MaxHP               int              `json:"maxHP"`
+    Weight              float64          `json:"weight"`
+    Width               float64          `json:"width"`
+    Height              float64          `json:"height"`
+    AttackTicks         int              `json:"attackTicks"`
+    AttackCooldownTicks int              `json:"attackCooldownTicks"`
+    ChargingJumpTicks   int              `json:"chargingJumpTicks"`
+	DyingTicks       	int              `json:"dyingTicks"`
+    HurtingTicks        int              `json:"hurtingTicks"`
+	AttackRange       	float64          `json:"attackRange"`
+    Animations          []AnimationJSON  `json:"animations"`
 }
 
 type AnimationJSON struct {
     Name        string 	   `json:"name"`
+    Group       string    `json:"group"`
     Image       string 	   `json:"image"`
     FrameWidth  int    	   `json:"frameWidth"`
     FrameHeight int    	   `json:"frameHeight"`
@@ -78,7 +89,12 @@ func LoadCharacters(path string) (map[string]*Character, error) {
             Weight:              c.Weight,
             Width:               c.Width,
             Height:              c.Height,
+            AttackTicks:         c.AttackTicks,
+            AttackCooldownTicks: c.AttackCooldownTicks,
             ChargingJumpTicks:   c.ChargingJumpTicks,
+            DyingTicks:          c.DyingTicks,
+            HurtingTicks:        c.HurtingTicks,
+            AttackRange:         c.AttackRange,
             Animations:          make(map[string]*base.Animation),
             AnimationsConfigs:   []base.AnimationConfig{},
         }
@@ -87,6 +103,7 @@ func LoadCharacters(path string) (map[string]*Character, error) {
             cfg := base.Anim(
                 a.Name,
                 a.Image,
+                a.Group,
                 a.FrameWidth,
                 a.FrameHeight,
                 a.Frames,

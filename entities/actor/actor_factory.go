@@ -29,8 +29,7 @@ func NewActor(x, y float64, controller b.Controller, direction int, char *charac
 			Height: char.Height,
 			Weight: char.Weight,
 		},
-		StateMachine: b.NewStateMachine(Idle),
-		Animator: b.NewAnimator(animCopy, string(Idle)),
+		Animator: b.NewAnimator(animCopy),
 		Character:   char,
 		Controller: controller,
 		MaxHp:          char.MaxHP,
@@ -38,6 +37,11 @@ func NewActor(x, y float64, controller b.Controller, direction int, char *charac
 		Speed:          char.Speed,
 		JumpForce:          char.JumpForce,
 		Direction:   direction,
+		AttackTicksMax: char.AttackTicks,
+		AttackCooldownTicksMax: char.AttackCooldownTicks,
 		ChargingJumpTicksMax: char.ChargingJumpTicks,
+		DyingTicksMax: char.DyingTicks,
+		HurtingTicksMax: char.HurtingTicks,
+		AttackRange: char.AttackRange,
 	}
 }

@@ -26,6 +26,10 @@ func (w *World) Step(p PhysicalBody) {
 	newX := x + vx
 	newY := y + vy
 
+	if newX+wid/2 < 0 || newX-wid/2 > w.Width || newY - h < 0 || newY + h > w.Height {
+		p.Die()
+	}
+
 	if vx != 0 {
 		if ((newX-wid/2 < w.VirtualBorderLeftX || newX+wid/2 > w.VirtualBorderRightX) && constants.VirtualBorders) ||
 			(newX-wid/2 < 0 || newX+wid/2 > w.Width) {

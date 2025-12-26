@@ -30,6 +30,7 @@ type Game struct {
 	levelName   	string
 	input       	*Input
 	full_screen 	bool
+	friendlyFire	bool
 }
 
 type Level struct {
@@ -123,7 +124,7 @@ func (g *Game) updateIntro() {
 
 func (g *Game) updateGame() {
 	for _, a := range g.players {
-		a.Update(g.world)
+		a.Update(g.world, g.players, g.friendlyFire)
 	}
 
 	playersPos := make([]base.PlayerPosition, 0, len(g.players))
@@ -235,10 +236,12 @@ func (g *Game) drawDebug(screen *ebiten.Image) {
 	ebitenutil.DebugPrintAt(
 		screen,
 		fmt.Sprintf(
-			"FPS: %.0f | cam(%.0f, %.0f)",
+			"FPS: %.0f | cam(%.0f, %.0f) | p1 alive: %t | p2 alive: %t",
 			ebiten.ActualFPS(),
 			g.camera.X,
 			g.camera.Y,
+			!g.players[0].Dead,
+			!g.players[1].Dead,
 		),
 		10,
 		constants.ScreenH-20,
@@ -269,7 +272,7 @@ func (g *Game) onStateChange(prev, current base.State) {
 
 	case StatePlaying:
 		if g.world == nil {
-			g.initializeNewGame(g.levelName)
+			g.initializeNewGame(g.levelName, true)
 		}
 
 	case StatePaused:
@@ -280,31 +283,28 @@ func (g *Game) initIntro() {
 	g.introTimer = 0
 }
 
-func (g *Game) initializeNewGame(initialLevelName string) {
+func (g *Game) initializeNewGame(initialLevelName string, friendlyFire bool) {
 	g.controllers = []base.Controller{
-		&controllers.KeyboardController{
-			Left: ebiten.KeyLeft,
-			Right: ebiten.KeyRight,
-			Down: ebiten.KeyDown,
-			Up: ebiten.KeyUp,
-		},
-		&controllers.KeyboardController{
-			Left: ebiten.KeyA,
-			Right: ebiten.KeyD,
-			Down: ebiten.KeyS,
-			Up: ebiten.KeyW,
-		},
-		&controllers.KeyboardController{
-			Left: ebiten.KeyJ,
-			Right: ebiten.KeyL,
-			Down: ebiten.KeyK,
-			Up: ebiten.KeyI,
-		},
+		controllers.NewKeyboardController(
+			ebiten.KeyLeft,
+			ebiten.KeyRight,
+			ebiten.KeyUp,
+			ebiten.KeyDown,
+			ebiten.KeySpace,
+		),
+		controllers.NewKeyboardController(
+			ebiten.KeyA,
+			ebiten.KeyD,
+			ebiten.KeyW,
+			ebiten.KeyS,
+			ebiten.KeyF,
+		),
 	}
 	playersChars, err := characters.LoadCharacters("characters/players.json")
 	if err != nil {
 		panic(err)
 	}
+	g.friendlyFire = friendlyFire
 	g.playersChars = playersChars
 	g.camera = &base.Camera{
 		Width:  constants.ScreenW,

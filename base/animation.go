@@ -1,6 +1,7 @@
 package base
 
 import (
+	"fmt"
 	"image"
 
 	u "github.com/gassyrdaulet/go-fighting-game/utils"
@@ -8,12 +9,12 @@ import (
 )
 
 type Animation struct {
-	Frames     []*ebiten.Image
-	FrameIndex int
-	FrameTick  int
-	FrameSpeed int
-	XO, YO     float64
-	Loop       bool
+	Frames     		[]*ebiten.Image
+	FrameIndex 		int
+	FrameTick  		int
+	FrameSpeed 		int
+	XO, YO     		float64
+	Loop       		bool
 }
 
 type AnimationConfig struct {
@@ -32,7 +33,7 @@ type AnimationConfig struct {
 }
 
 func Anim(
-	name, path string,
+	name, path, group string,
 	w, h, count, x, y, speed int,
 	xOffset, yOffset float64,
 	loop bool,
@@ -55,7 +56,7 @@ func Anim(
 func loadFrames(cfg *AnimationConfig) ([]*ebiten.Image, error) {
 	img, err := u.LoadImage(cfg.FilePath)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("cannot load file: %s %s", cfg.Name, cfg.FilePath)
 	}
 
 	frames := make([]*ebiten.Image, cfg.Count)
@@ -79,7 +80,6 @@ func LoadAnimations(cfgs []AnimationConfig) (map[string]*Animation, error) {
 		if err != nil {
 			return nil, err
 		}
-
 		animations[cfg.Name] = &Animation{
 			Frames:     frames,
 			FrameSpeed: cfg.FrameSpeed,
@@ -93,29 +93,34 @@ func LoadAnimations(cfgs []AnimationConfig) (map[string]*Animation, error) {
 }
 
 type Animator struct {
-	CurrentAnimation           string
+	CurrentAnimation		   string
 	Animations                 map[string]*Animation
 	SpriteScaleX, SpriteScaleY float64
 }
 
-func NewAnimator(animations map[string]*Animation, current string) *Animator {
+func NewAnimator(animations map[string]*Animation) *Animator {
 	return &Animator{
 		Animations:       animations,
-		CurrentAnimation: current,
 		SpriteScaleX:     1,
 		SpriteScaleY:     1,
 	}
 }
 
-func (a *Animator) UpdateFrame(state string) {
-	if a.CurrentAnimation != state {
-		a.CurrentAnimation = state
-		anim := a.Animations[a.CurrentAnimation]
+func (a *Animator) UpdateFrame(animation string) {
+	if a.CurrentAnimation == "none" {
+		return
+	}
+	anim, ok := a.Animations[animation]
+	if !ok || anim == nil || len(anim.Frames) == 0 {
+		return
+	}
+
+	if a.CurrentAnimation != animation {
+		a.CurrentAnimation = animation
 		anim.FrameIndex = 0
 		anim.FrameTick = 0
 	}
 
-	anim := a.Animations[a.CurrentAnimation]
 	anim.FrameTick++
 	if anim.FrameTick >= anim.FrameSpeed {
 		anim.FrameTick = 0
@@ -128,8 +133,8 @@ func (a *Animator) UpdateFrame(state string) {
 }
 
 func (a *Animator) DrawFrame(screen *ebiten.Image, x, y float64, flip bool) {
-	anim := a.Animations[a.CurrentAnimation]
-	if len(anim.Frames) == 0 {
+	anim, ok := a.Animations[a.CurrentAnimation]
+	if !ok || anim == nil || len(anim.Frames) == 0 {
 		return
 	}
 	currentFrame := anim.Frames[anim.FrameIndex]

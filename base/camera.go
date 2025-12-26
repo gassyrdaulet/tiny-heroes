@@ -20,18 +20,30 @@ func (c *Camera) WorldToScreen(worldX, worldY float64) (screenX, screenY float64
 	return worldX - tlx, worldY - tly
 }
 
+func AlivePlayers(players []PlayerPosition) []PlayerPosition {
+	alive := make([]PlayerPosition, 0, len(players))
+	for _, p := range players {
+		if p.IsAlive() {
+			alive = append(alive, p)
+		}
+	}
+	return alive
+}
+
 func (c *Camera) UpdateFromPlayers(players []PlayerPosition, worldW, worldH float64) {
-	if len(players) == 0 {
+	alivePlayers := AlivePlayers(players)
+
+	if len(alivePlayers) == 0 {
 		return
 	}
 
-	anchorX, anchorY := players[0].Position()
+	anchorX, anchorY := alivePlayers[0].Position()
 
 	minX, minY := anchorX, anchorY
 	maxX, maxY := anchorX, anchorY
 
-	for i := 1; i < len(players); i++ {
-		x, y := players[i].Position()
+	for i := 1; i < len(alivePlayers); i++ {
+		x, y := alivePlayers[i].Position()
 
 		if x < minX {
 			minX = x

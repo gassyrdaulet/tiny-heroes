@@ -15,4 +15,5 @@ type PhysicalBody interface {
 	SetOnGround(onGround bool)
 	GetWeight() float64
 	SetWeight(weight float64)
+	Die()
 }
